@@ -79,7 +79,6 @@ RUN echo "root:x:0:0:root:/denied:/bin/nologin" > /etc/passwd \
  && echo "${GROUP_NAME}:x:${GROUP_ID}:" >> /etc/group
 
 # ADD THE CARDANO NODE REQUIRED LIBRARIES
-COPY --from=builder ${LIB}/libc.so.6 ${LIB}/
 COPY --from=builder ${LIB}/libm.so.6 ${LIB}/
 COPY --from=builder ${LIB}/libtinfo.so.6 ${LIB}/
 COPY --from=builder ${LIB}/libsystemd.so.0 ${LIB}/
@@ -109,7 +108,7 @@ COPY --from=builder /root/.cabal/bin/cardano-node /usr/local/bin/
 #COPY --from=builder ${LIB}/libnss_files.so.2 ${LIB}/
 
 # [OPTIONAL] UTILITIES BINARIES
-#COPY --from=builder /bin/ls /bin/
+COPY --from=builder /bin/ls /bin/
 #COPY --from=builder /bin/cat /bin/
 #COPY --from=builder /usr/sbin/nologin /bin/
 #COPY --from=builder /bin/echo /bin/

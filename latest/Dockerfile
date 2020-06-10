@@ -2,27 +2,18 @@
 ## The Lightweight & Secure Cardano Node Container ##
 #####################################################
 
-# SET DYNAMIC VARIABLES
-# > To override them, inject with docker/podman/buildah "--build-arg" argument
-#   Example : buildah bud ... --build-arg USER_NAME="new-user"
-ARG NODE_VERSION="1.13.0"
-ARG USER_NAME="cardano-node"
-ARG USER_ID="256"
-ARG GROUP_NAME="cardano-node"
-ARG GROUP_ID="256"
-ARG GHC_VERSION="cardano-node"
-ARG CABAL_VERSION="3.2.0.0"
-ARG OS_ARCH="x86_64"
-
-# SET STATIC VARIABLES
-# > Currently, only x86_64 architecture is supported, change this at your own risks
-ARG LIB="/lib/x86_64-linux-gnu"
-ARG LIB64="/lib64"
-ARG HASKELL_REPO="https://downloads.haskell.org"
-
 # LOAD DEBIAN IMAGE
 # > Use debian for the building stage ONLY
 FROM debian AS builder
+
+# SET DYNAMIC VARIABLES
+# > To override them, inject with docker/podman/buildah "--build-arg" argument
+#   Example : buildah bud ... --build-arg NODE_VERSION="1.12.0"
+ARG NODE_VERSION="1.13.0"
+ARG GHC_VERSION="8.6.5"
+ARG CABAL_VERSION="3.2.0.0"
+ARG OS_ARCH="x86_64"
+ARG HASKELL_REPO="https://downloads.haskell.org"
 
 # INSTALL PREREQUISITES
 RUN apt update -y \
@@ -56,18 +47,31 @@ RUN /build/cabal/cabal update \
 # The smallest available image ever
 FROM scratch as final
 
-# PUT SOME ADVERTISING ^_^
+# SET DYNAMIC VARIABLES
+# > To override them, inject with docker/podman/buildah "--build-arg" argument
+#   Example : buildah bud ... --build-arg USER_NAME="new-user"
+ARG USER_NAME="cardano-node"
+ARG USER_ID="256"
+ARG GROUP_NAME="cardano-node"
+ARG GROUP_ID="256"
+
+# SET STATIC VARIABLES
+# > Currently, only x86_64 architecture is supported, change this at your own risks
+ARG LIB="/lib/x86_64-linux-gnu"
+ARG LIB64="/lib64"
+
+# SOME ADVERTISING ^_^
 LABEL "com.cardanobay.www"="[CAB] Cardanobay.com Stake Pool"
 LABEL description="The Lightweight & Secure Cardano Node Container"
 LABEL maintainer="pascha+cardanobay@protonmail.ch"
 
 # ADD A SHELL
-# > Mandatory to run commands inside a sratch image
+# > Mandatory to run commands inside a scratch image
 COPY --from=builder ${LIB}/libc.so.6 ${LIB}/
 COPY --from=builder ${LIB64}/ld-linux-x86-64.so.2 ${LIB64}/
 COPY --from=builder /bin/dash /bin/sh
 
-# ADD CARDANO NODE USER AND GROUP
+# ADD CARDANO NODE USER AND GROUP + ROOT USER AND GROUP
 COPY --from=builder /usr/sbin/nologin /bin/
 RUN echo "root:x:0:0:root:/denied:/bin/nologin" > /etc/passwd \
  && echo "${USER_NAME}:x:${USER_ID}:${GROUP_ID}:Cardano Node Service Account:/denied:/bin/nologin" >> /etc/passwd \
@@ -75,7 +79,6 @@ RUN echo "root:x:0:0:root:/denied:/bin/nologin" > /etc/passwd \
  && echo "${GROUP_NAME}:x:${GROUP_ID}:" >> /etc/group
 
 # ADD THE CARDANO NODE REQUIRED LIBRARIES
-COPY --from=builder ${LIB}/libc.so.6 ${LIB}/
 COPY --from=builder ${LIB}/libm.so.6 ${LIB}/
 COPY --from=builder ${LIB}/libtinfo.so.6 ${LIB}/
 COPY --from=builder ${LIB}/libsystemd.so.0 ${LIB}/
@@ -94,7 +97,7 @@ COPY --from=builder /usr/${LIB}/liblz4.so.1 /usr/${LIB}/
 COPY --from=builder /root/.cabal/bin/cardano-node /usr/local/bin/
 
 # ADD OPTIONAL UTILITIES
-# > You can uncomment the two following [OPTINAL] sections for debugging purposes
+# > You can uncomment the two following [OPTIONAL] sections for debugging purposes
 
 # [OPTIONAL] UTILITIES LIBRARIES
 #COPY --from=builder ${LIB}/ld-2.28.so ${LIB}/
@@ -105,7 +108,7 @@ COPY --from=builder /root/.cabal/bin/cardano-node /usr/local/bin/
 #COPY --from=builder ${LIB}/libnss_files.so.2 ${LIB}/
 
 # [OPTIONAL] UTILITIES BINARIES
-#COPY --from=builder /bin/ls /bin/
+COPY --from=builder /bin/ls /bin/
 #COPY --from=builder /bin/cat /bin/
 #COPY --from=builder /usr/sbin/nologin /bin/
 #COPY --from=builder /bin/echo /bin/
