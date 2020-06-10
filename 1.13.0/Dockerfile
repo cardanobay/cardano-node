@@ -2,27 +2,18 @@
 ## The Lightweight & Secure Cardano Node Container ##
 #####################################################
 
+# LOAD DEBIAN IMAGE
+# > Use debian for the building stage ONLY
+FROM debian AS builder
+
 # SET DYNAMIC VARIABLES
 # > To override them, inject with docker/podman/buildah "--build-arg" argument
 #   Example : buildah bud ... --build-arg USER_NAME="new-user"
 ARG NODE_VERSION="1.13.0"
-ARG USER_NAME="cardano-node"
-ARG USER_ID="256"
-ARG GROUP_NAME="cardano-node"
-ARG GROUP_ID="256"
-ARG GHC_VERSION="cardano-node"
+ARG GHC_VERSION="8.6.5"
 ARG CABAL_VERSION="3.2.0.0"
 ARG OS_ARCH="x86_64"
-
-# SET STATIC VARIABLES
-# > Currently, only x86_64 architecture is supported, change this at your own risks
-ARG LIB="/lib/x86_64-linux-gnu"
-ARG LIB64="/lib64"
 ARG HASKELL_REPO="https://downloads.haskell.org"
-
-# LOAD DEBIAN IMAGE
-# > Use debian for the building stage ONLY
-FROM debian AS builder
 
 # INSTALL PREREQUISITES
 RUN apt update -y \
@@ -35,8 +26,7 @@ RUN apt update -y \
 WORKDIR /build/cabal
 
 RUN echo "DEBUGGING >>> ${HASKELL_REPO} ${CABAL_VERSION} ${OS_ARCH}"
-#RUN wget -qO- ${HASKELL_REPO}/~cabal/cabal-install-${CABAL_VERSION}/cabal-install-${CABAL_VERSION}-${OS_ARCH}-unknown-linux.tar.xz | tar xJf - -C .
-RUN curl ${HASKELL_REPO}/~cabal/cabal-install-${CABAL_VERSION}/cabal-install-${CABAL_VERSION}-${OS_ARCH}-unknown-linux.tar.xz | tar xJf - -C .
+RUN wget -qO- ${HASKELL_REPO}/~cabal/cabal-install-${CABAL_VERSION}/cabal-install-${CABAL_VERSION}-${OS_ARCH}-unknown-linux.tar.xz | tar xJf - -C .
 
 # INSTALL GHC
 # The Glasgow Haskell Compiler
@@ -58,6 +48,20 @@ RUN /build/cabal/cabal update \
 # LOAD SCRATCH IMAGE
 # The smallest available image ever
 FROM scratch as final
+
+# SET DYNAMIC VARIABLES
+# > To override them, inject with docker/podman/buildah "--build-arg" argument
+#   Example : buildah bud ... --build-arg USER_NAME="new-user"
+ARG USER_NAME="cardano-node"
+ARG USER_ID="256"
+ARG GROUP_NAME="cardano-node"
+ARG GROUP_ID="256"
+
+# SET STATIC VARIABLES
+# > Currently, only x86_64 architecture is supported, change this at your own risks
+ARG LIB="/lib/x86_64-linux-gnu"
+ARG LIB64="/lib64"
+ARG HASKELL_REPO="https://downloads.haskell.org"
 
 # PUT SOME ADVERTISING ^_^
 LABEL "com.cardanobay.www"="[CAB] Cardanobay.com Stake Pool"
