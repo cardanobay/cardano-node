@@ -28,7 +28,7 @@ FROM debian AS builder
 RUN apt update -y \
  && apt install -y \
     build-essential pkg-config libffi-dev libgmp-dev libssl-dev libtinfo-dev \
-    libsystemd-dev zlib1g-dev make g++ git wget libncursesw5
+    libsystemd-dev zlib1g-dev make g++ git wget libncursesw5 xz-utils
 
 # INSTALL CABAL
 # The Haskell Common Architecture for Building Applications and Libraries
