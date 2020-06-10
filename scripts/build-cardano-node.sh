@@ -60,8 +60,15 @@ if [ -z "$node_version" ]; then
   usage
 fi
 
+build_path=$(echo "${PWD}/${node_version}/")
+if [ ! -d "${build_path}" ]; then
+  echo "Build path ${build_path} doesn't exist"
+  exit 0
+fi
+
 echo ""
-echo "Check the options before continuing :"
+echo "!!! Verify carefully the options before continuing !!!"
+echo ""
 echo "node_version  : $node_version"
 echo "user_name     : $user_name"
 echo "user_id       : $user_id"
@@ -72,8 +79,6 @@ echo "cabal_version : $cabal_version"
 echo "os_arch       : $os_arch"
 echo "port          : $port"
 echo ""
-
-echo $(dirname ${PWD})/${node_version}/
 
 read -n 1 -s -r -p "Press any key to continue"
 echo ""
@@ -86,7 +91,7 @@ buildah rmi "localhost/${tag}" 2>/dev/null
 set -e
 
 echo "Building image ${tag}..."
-buildah bud --layers --tag ${tag} --build-arg NODE_VERSION=${node_version} --build-arg USER_NAME=${user_name} --build-arg USER_ID=${user_id} --build-arg GROUP_NAME=${group_name} --build-arg GROUP_ID=${group_id} --build-arg GHC_VERSION=${ghc_version} --build-arg CABAL_VERSION=${cabal_version} --build-arg OS_ARCH=${os_arch} --build-arg PORT=${port} $(dirname ${PWD})/${node_version}/
+buildah bud --layers --tag ${tag} --build-arg NODE_VERSION=${node_version} --build-arg USER_NAME=${user_name} --build-arg USER_ID=${user_id} --build-arg GROUP_NAME=${group_name} --build-arg GROUP_ID=${group_id} --build-arg GHC_VERSION=${ghc_version} --build-arg CABAL_VERSION=${cabal_version} --build-arg OS_ARCH=${os_arch} --build-arg PORT=${port} ${build_path}
 
 echo "Image built ${tag}..."
 buildah images | grep -i "cardano-node"
