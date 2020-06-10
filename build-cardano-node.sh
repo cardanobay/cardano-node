@@ -1,6 +1,7 @@
 #!/bin/sh
 
 set -e
+
 trap 'catch $? $LINENO' EXIT
 
 usage() {

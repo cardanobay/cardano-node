@@ -8,7 +8,7 @@ FROM debian AS builder
 
 # SET DYNAMIC VARIABLES
 # > To override them, inject with docker/podman/buildah "--build-arg" argument
-#   Example : buildah bud ... --build-arg USER_NAME="new-user"
+#   Example : buildah bud ... --build-arg NODE_VERSION="1.12.0"
 ARG NODE_VERSION="1.13.0"
 ARG GHC_VERSION="8.6.5"
 ARG CABAL_VERSION="3.2.0.0"
@@ -19,13 +19,11 @@ ARG HASKELL_REPO="https://downloads.haskell.org"
 RUN apt update -y \
  && apt install -y \
     build-essential pkg-config libffi-dev libgmp-dev libssl-dev libtinfo-dev \
-    libsystemd-dev zlib1g-dev make g++ git wget libncursesw5 xz-utils curl
+    libsystemd-dev zlib1g-dev make g++ git wget libncursesw5
 
 # INSTALL CABAL
 # The Haskell Common Architecture for Building Applications and Libraries
 WORKDIR /build/cabal
-
-RUN echo "DEBUGGING >>> ${HASKELL_REPO} ${CABAL_VERSION} ${OS_ARCH}"
 RUN wget -qO- ${HASKELL_REPO}/~cabal/cabal-install-${CABAL_VERSION}/cabal-install-${CABAL_VERSION}-${OS_ARCH}-unknown-linux.tar.xz | tar xJf - -C .
 
 # INSTALL GHC
@@ -61,20 +59,19 @@ ARG GROUP_ID="256"
 # > Currently, only x86_64 architecture is supported, change this at your own risks
 ARG LIB="/lib/x86_64-linux-gnu"
 ARG LIB64="/lib64"
-ARG HASKELL_REPO="https://downloads.haskell.org"
 
-# PUT SOME ADVERTISING ^_^
+# SOME ADVERTISING ^_^
 LABEL "com.cardanobay.www"="[CAB] Cardanobay.com Stake Pool"
 LABEL description="The Lightweight & Secure Cardano Node Container"
 LABEL maintainer="pascha+cardanobay@protonmail.ch"
 
 # ADD A SHELL
-# > Mandatory to run commands inside a sratch image
+# > Mandatory to run commands inside a scratch image
 COPY --from=builder ${LIB}/libc.so.6 ${LIB}/
 COPY --from=builder ${LIB64}/ld-linux-x86-64.so.2 ${LIB64}/
 COPY --from=builder /bin/dash /bin/sh
 
-# ADD CARDANO NODE USER AND GROUP
+# ADD CARDANO NODE USER AND GROUP + ROOT USER AND GROUP
 COPY --from=builder /usr/sbin/nologin /bin/
 RUN echo "root:x:0:0:root:/denied:/bin/nologin" > /etc/passwd \
  && echo "${USER_NAME}:x:${USER_ID}:${GROUP_ID}:Cardano Node Service Account:/denied:/bin/nologin" >> /etc/passwd \
@@ -101,7 +98,7 @@ COPY --from=builder /usr/${LIB}/liblz4.so.1 /usr/${LIB}/
 COPY --from=builder /root/.cabal/bin/cardano-node /usr/local/bin/
 
 # ADD OPTIONAL UTILITIES
-# > You can uncomment the two following [OPTINAL] sections for debugging purposes
+# > You can uncomment the two following [OPTIONAL] sections for debugging purposes
 
 # [OPTIONAL] UTILITIES LIBRARIES
 #COPY --from=builder ${LIB}/ld-2.28.so ${LIB}/

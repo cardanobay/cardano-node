@@ -48,11 +48,7 @@ echo ""
 read -n 1 -s -r -p "Press any key to continue"
 echo ""
 
-
-#tag="cardano-node:${node_version}"
-
 if [ ! -d "./$tag" ]; then
-  # Take action if $DIR exists. #
   echo "Directory ./${tag} doesn't exist"
   exit 0
 fi
