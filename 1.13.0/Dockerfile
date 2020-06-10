@@ -109,7 +109,7 @@ COPY --from=builder /root/.cabal/bin/cardano-node /usr/local/bin/
 #COPY --from=builder ${LIB}/libnss_files.so.2 ${LIB}/
 
 # [OPTIONAL] UTILITIES BINARIES
-COPY --from=builder /bin/ls /bin/
+#COPY --from=builder /bin/ls /bin/
 #COPY --from=builder /bin/cat /bin/
 #COPY --from=builder /usr/sbin/nologin /bin/
 #COPY --from=builder /bin/echo /bin/
