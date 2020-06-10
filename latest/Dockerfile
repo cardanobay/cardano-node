@@ -9,7 +9,7 @@ FROM debian AS builder
 # SET DYNAMIC VARIABLES
 # > To override them, inject with docker/podman/buildah "--build-arg" argument
 #   Example : buildah bud ... --build-arg NODE_VERSION="1.12.0"
-ARG NODE_VERSION="1.13.0"
+ARG NODE_VERSION="latest"
 ARG GHC_VERSION="8.6.5"
 ARG CABAL_VERSION="3.2.0.0"
 ARG OS_ARCH="x86_64"
@@ -37,7 +37,7 @@ RUN wget -qO- ${HASKELL_REPO}/~ghc/${GHC_VERSION}/ghc-${GHC_VERSION}-${OS_ARCH}-
 WORKDIR /build/cardano-node
 RUN git clone https://github.com/input-output-hk/cardano-node.git . \
  && git fetch --all --tags \
- && git checkout tags/${NODE_VERSION}
+ && git checkout tags/$([ "$NODE_VERSION" == "latest" ] && echo $(git describe --tags `git rev-list --tags --max-count=1`) || echo "$NODE_VERSION")
 
 # BUILD CARDANO NODE BINARY FROM SOURCES
 RUN /build/cabal/cabal update \
@@ -54,6 +54,7 @@ ARG USER_NAME="cardano-node"
 ARG USER_ID="256"
 ARG GROUP_NAME="cardano-node"
 ARG GROUP_ID="256"
+ARG PORT="3001"
 
 # SET STATIC VARIABLES
 # > Currently, only x86_64 architecture is supported, change this at your own risks
@@ -118,6 +119,7 @@ COPY --from=builder /bin/ls /bin/
 
 # RUN AS CARDANO NODE USER BY DEFAULT
 USER ${USER_NAME}
+EXPOSE ${PORT}/tcp
 
 # FORCE CARDANO NODE COMMAND 
 ENTRYPOINT ["cardano-node"]
