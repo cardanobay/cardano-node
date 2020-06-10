@@ -33,6 +33,8 @@ RUN apt update -y \
 # INSTALL CABAL
 # The Haskell Common Architecture for Building Applications and Libraries
 WORKDIR /build/cabal
+
+RUN echo "DEBUGGING >>> ${HASKELL_REPO} ${CABAL_VERSION} ${OS_ARCH}"
 #RUN wget -qO- ${HASKELL_REPO}/~cabal/cabal-install-${CABAL_VERSION}/cabal-install-${CABAL_VERSION}-${OS_ARCH}-unknown-linux.tar.xz | tar xJf - -C .
 RUN curl ${HASKELL_REPO}/~cabal/cabal-install-${CABAL_VERSION}/cabal-install-${CABAL_VERSION}-${OS_ARCH}-unknown-linux.tar.xz | tar xJf - -C .
 
