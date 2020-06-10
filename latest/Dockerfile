@@ -37,7 +37,10 @@ RUN wget -qO- ${HASKELL_REPO}/~ghc/${GHC_VERSION}/ghc-${GHC_VERSION}-${OS_ARCH}-
 WORKDIR /build/cardano-node
 RUN git clone https://github.com/input-output-hk/cardano-node.git . \
  && git fetch --all --tags \
- && git checkout tags/$([ "$NODE_VERSION" == "latest" ] && echo $(git describe --tags `git rev-list --tags --max-count=1`) || echo "$NODE_VERSION")
+ && tag=$([ "$NODE_VERSION" = "latest" ] \
+        && echo $(git describe --tags $(git rev-list --tags --max-count=1)) \
+        || echo ${NODE_VERSION}) \
+ && git checkout tags/latest
 
 # BUILD CARDANO NODE BINARY FROM SOURCES
 RUN /build/cabal/cabal update \

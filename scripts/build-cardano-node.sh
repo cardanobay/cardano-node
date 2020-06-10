@@ -27,8 +27,8 @@ usage() {
 
 catch() {
   if [ "$1" != "0" ]; then
-    echo "An error has occured, please verify the options"
-    usage
+    echo "An error has occured. Abording."
+    exit 0
   fi
 }
 
