@@ -40,7 +40,7 @@ RUN git clone https://github.com/input-output-hk/cardano-node.git . \
  && tag=$([ "$NODE_VERSION" = "latest" ] \
         && echo $(git describe --tags $(git rev-list --tags --max-count=1)) \
         || echo ${NODE_VERSION}) \
- && git checkout tags/latest
+ && git checkout tags/${tag}
 
 # BUILD CARDANO NODE BINARY FROM SOURCES
 RUN /build/cabal/cabal update \
