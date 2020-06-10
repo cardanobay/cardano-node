@@ -28,12 +28,13 @@ FROM debian AS builder
 RUN apt update -y \
  && apt install -y \
     build-essential pkg-config libffi-dev libgmp-dev libssl-dev libtinfo-dev \
-    libsystemd-dev zlib1g-dev make g++ git wget libncursesw5 xz-utils
+    libsystemd-dev zlib1g-dev make g++ git wget libncursesw5 xz-utils curl
 
 # INSTALL CABAL
 # The Haskell Common Architecture for Building Applications and Libraries
 WORKDIR /build/cabal
-RUN wget -qO- ${HASKELL_REPO}/~cabal/cabal-install-${CABAL_VERSION}/cabal-install-${CABAL_VERSION}-${OS_ARCH}-unknown-linux.tar.xz | tar xJf - -C .
+#RUN wget -qO- ${HASKELL_REPO}/~cabal/cabal-install-${CABAL_VERSION}/cabal-install-${CABAL_VERSION}-${OS_ARCH}-unknown-linux.tar.xz | tar xJf - -C .
+RUN curl ${HASKELL_REPO}/~cabal/cabal-install-${CABAL_VERSION}/cabal-install-${CABAL_VERSION}-${OS_ARCH}-unknown-linux.tar.xz | tar xJf - -C .
 
 # INSTALL GHC
 # The Glasgow Haskell Compiler
