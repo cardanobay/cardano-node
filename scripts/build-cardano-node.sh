@@ -20,6 +20,7 @@ usage() {
   echo "                  and Libraries [Default: 3.2.0.0]"
 #  echo "  --os_arch       The operating system architecture [Default: x86_64]"
   echo "  --port          The default EXPOSED TCP port [Default: 3001]"
+  echo "  --builder       Which binary to use to build the container [Default: docker] [docker|buildah]"
   echo "  --help          Display this message"
   echo " * = mandatory options"
   exit 0
@@ -43,6 +44,7 @@ cabal_version=${cabal_version:-3.2.0.0}
 #os_arch=${os_arch:-x86_64}
 os_arch="x86_64"
 port=${port:-3001}
+builder=${builder:-docker}
 
 while [ $# -gt 0 ]; do
    if [[ $1 == *"--"* ]]; then
@@ -58,6 +60,11 @@ fi
 
 if [ -z "$node_version" ]; then
   usage
+fi
+
+if [ ! -x "$(command -v ${builder})" ]; then
+  echo "Error: builder '${builder}' not found if \$PATH"
+  exit 1
 fi
 
 build_path=$(echo "${PWD}/${node_version}/")
@@ -78,6 +85,7 @@ echo "ghc_version   : $ghc_version"
 echo "cabal_version : $cabal_version"
 echo "os_arch       : $os_arch"
 echo "port          : $port"
+echo "builder       : $builder"
 echo ""
 
 read -n 1 -s -r -p "Press any key to continue"
@@ -91,7 +99,21 @@ buildah rmi "localhost/${tag}" 2>/dev/null
 set -e
 
 echo "Building image ${tag}..."
-buildah bud --layers --tag ${tag} --build-arg NODE_VERSION=${node_version} --build-arg USER_NAME=${user_name} --build-arg USER_ID=${user_id} --build-arg GROUP_NAME=${group_name} --build-arg GROUP_ID=${group_id} --build-arg GHC_VERSION=${ghc_version} --build-arg CABAL_VERSION=${cabal_version} --build-arg OS_ARCH=${os_arch} --build-arg PORT=${port} ${build_path}
+
+case "${builder}" in
+   "docker")
+      docker build --tag ${tag} --build-arg NODE_VERSION=${node_version} --build-arg USER_NAME=${user_name} \
+                   --build-arg USER_ID=${user_id} --build-arg GROUP_NAME=${group_name} --build-arg GROUP_ID=${group_id} \
+		   --build-arg GHC_VERSION=${ghc_version} --build-arg CABAL_VERSION=${cabal_version} \
+		   --build-arg OS_ARCH=${os_arch} --build-arg PORT=${port} ${build_path}
+      ;;
+   "buildah")
+       buildah bud --layers --tag ${tag} --build-arg NODE_VERSION=${node_version} --build-arg USER_NAME=${user_name} \
+                   --build-arg USER_ID=${user_id} --build-arg GROUP_NAME=${group_name} --build-arg GROUP_ID=${group_id} \
+		   --build-arg GHC_VERSION=${ghc_version} --build-arg CABAL_VERSION=${cabal_version} \
+		   --build-arg OS_ARCH=${os_arch} --build-arg PORT=${port} ${build_path}
+      ;;
+esac
 
 echo "Image built ${tag}..."
 buildah images | grep -i "cardano-node"
