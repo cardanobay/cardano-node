@@ -2,13 +2,16 @@
 ## The Lightweight & Secure Cardano Node Container ##
 #####################################################
 
+# ----------------------------------------------------------------
+# CARDANO-NODE - BUILDING STAGE
+# ----------------------------------------------------------------
+
 # LOAD DEBIAN IMAGE
-# > Use debian for the building stage ONLY
 FROM debian AS builder
 
 # SET DYNAMIC VARIABLES
-# > To override them, inject with docker/podman/buildah "--build-arg" argument
-#   Example : buildah bud ... --build-arg NODE_VERSION="1.12.0"
+# > To override them, use the "--build-arg" argument
+#   Example : buildah bud ... --build-arg USER_ID="1000"
 ARG NODE_VERSION="1.13.0"
 ARG USER_NAME="cardano-node"
 ARG USER_ID="256"
@@ -50,7 +53,6 @@ RUN git clone https://github.com/input-output-hk/cardano-node.git . \
 RUN /build/cabal/cabal update \
  && /build/cabal/cabal install --disable-executable-dynamic --enable-executable-static -j$(nproc) cardano-node
 
-
 # COPY CARDANO NODE BINARY AND REQUIRED LIBRARIES
 WORKDIR /build/rootfs
 RUN mkdir -p ./usr/local/bin \
@@ -59,11 +61,38 @@ RUN mkdir -p ./usr/local/bin \
 
 # ADD CARDANO NODE USER AND GROUP + ROOT USER AND GROUP
 WORKDIR /build/rootfs/etc
-RUN cp --parents -fP /usr/sbin/nologin ../ \
+RUN cp --parents -f /usr/sbin/nologin ../ \
  && echo "root:x:0:0:root:/denied:/usr/sbin/nologin" > passwd \
  && echo "${USER_NAME}:x:${USER_ID}:${GROUP_ID}:Cardano Node Service Account:/denied:/usr/sbin/nologin" >> passwd \
  && echo "root:x:0:" > group \
  && echo "${GROUP_NAME}:x:${GROUP_ID}:" >> group
+
+# ADD DNS RESOLUTION CAPABILITIES
+WORKDIR /build/rootfs
+RUN cp --parents -f /lib/x86_64-linux-gnu/libnss_dns.so.2 . \
+ && cp --parents -f /lib/x86_64-linux-gnu/libnss_files.so.2 .
+
+# [OPTIONAL] ADD OPTIONAL UTILITIES
+# > Uncomment this section to add some debugging utilities
+# !!! DON'T ADD THESES UTILITIES IN PRODUCTION !!!
+#RUN set -- \
+#              /bin/bash /bin/ls /bin/cat /bin/echo /bin/ip /bin/ping \
+#              /bin/grep /usr/bin/id /usr/bin/tail /usr/bin/du \
+#              /usr/bin/find /usr/bin/whoami \
+#           \
+# && while [ $# -gt 0 ]; \
+#      do \
+#        ldd ${1} | grep -Po '(?<=)\/.+[^ ]+(?= )' | \
+#          while read -r line; \
+#            do \
+#              cp --parents -f $line . ; \
+#            done; \
+#        cp --parents -f ${1} . \
+#        && shift; \
+#      done
+# ----------------------------------------------------------------
+# CARDANO-NODE - FINAL CONTAINER
+# ----------------------------------------------------------------
 
 # LOAD SCRATCH IMAGE
 # The smallest available image ever
@@ -74,37 +103,11 @@ LABEL "com.cardanobay.www"="[CAB] Cardanobay.com Stake Pool"
 LABEL description="The Lightweight & Secure Cardano Node Container"
 LABEL maintainer="pascha+cardanobay@protonmail.ch"
 
-# SET DYNAMIC VARIABLES
-# > To override them, inject with docker/podman/buildah "--build-arg" argument
-#   Example : buildah bud ... --build-arg PORT="1234"
+# SET EXPOSED PORT
 ARG PORT="3001"
 
 # POPULATE ROOTFS
 COPY --from=builder /build/rootfs/ /
-
-# [OPTIONAL] ADD OPTIONAL UTILITIES
-# > Uncomment this section to add some debugging utilities
-# !!! DON'T ADD THESES UTILITIES IN PRODUCTION !!!
-
-#ARG LIB="/lib/x86_64-linux-gnu"
-#ARG LIB64="/lib64"
-#COPY --from=builder ${LIB}/libselinux.so.1 ${LIB}/
-#COPY --from=builder ${LIB}/libm.so.6 ${LIB}/
-#COPY --from=builder ${LIB}/libc.so.6 ${LIB}/
-#COPY --from=builder ${LIB}/libpcre.so.3 ${LIB}/
-#COPY --from=builder ${LIB}/libdl.so.2 ${LIB}/
-#COPY --from=builder ${LIB}/libpthread.so.0 ${LIB}/
-#COPY --from=builder ${LIB64}/ld-linux-x86-64.so.2 ${LIB64}/
-#COPY --from=builder /bin/dash /bin/sh
-#COPY --from=builder /bin/ls /bin/
-#COPY --from=builder /bin/cat /bin/
-#COPY --from=builder /bin/echo /bin/
-#COPY --from=builder /usr/bin/whoami /bin/
-#COPY --from=builder /usr/bin/id /bin/
-#COPY --from=builder /usr/bin/tail /bin/
-#COPY --from=builder /usr/bin/du /bin/
-#COPY --from=builder /bin/grep /bin/
-#COPY --from=builder /usr/bin/find /bin/
 
 # RUN AS CARDANO NODE USER BY DEFAULT
 USER ${USER_NAME}
