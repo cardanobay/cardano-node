@@ -6,10 +6,11 @@ Because the container is based on [the scratch image](https://hub.docker.com/_/s
 
 List of stuff packaged in the container :
 
-* The cardano-node required libraries (~7Mb)
-* The cardano-node binary (~104MB)
-* The nologin binary (used as default shell for users) (~14Kb)
-* Two users (cardano-node and root) [~150b]
+* The cardano-node required libraries (~7 MB)
+* The domain name service (DNS) libraries (~80 KB)
+* The cardano-node binary (~104 MB)
+* The nologin binary (used as default shell for users) (~14 KB)
+* Two users (cardano-node and root) [~150 b]
 
 Container bundle : **22 Mb compressed** <-> **116 Mb uncompressed**
 
@@ -19,7 +20,7 @@ Container bundle : **22 Mb compressed** <-> **116 Mb uncompressed**
 
 Because the node runs, by default, with an **unprivileged user**. \
 Another reason is the attack surface is reduced to the strict minimum, because the container contains nothing except the **cardano-node binary**. \
-One more reason, the **Dockerfile(s) and the building script are published** on the github repository and Docker Hub. So you can verifiy by yourself what is packaged inside the container. You should **always verify** what is packaged inside a container before using it.
+One more reason, the **Dockerfile(s) and the building script are published** on the github repository. So you can verify by yourself what is packaged inside the container. You should **always verify** what is packaged inside a container before using it.
 
 ## How can I download the container ?
 You can find the latest version of the cardano-node container on [the Cardanobay Docker Hub Repository](https://hub.docker.com/repository/docker/cardanobay/cardano-node "the Cardanobay Docker Hub Repository")
@@ -37,13 +38,14 @@ docker run --name cardano-node --rm cardanobay/cardano-node:latest <command>
 
 The current building script accepts both docker and buildah
 
+⚠️ Depending on your ~~battle~~ workstation, it can take from 5-60 minutes to build ⚠️
+
 ```
 git clone https://github.com/cardanobay/cardano-node.git
 cd cardano-node
 ./scripts/build-cardano-node.sh
 ```
 
-Command line options :
 
 ```
 Usage: ./scripts/build-cardano-node.sh --node_version <version> [OPTIONS]
@@ -66,14 +68,21 @@ Available options:
 
 ```
 
-## Debugging
-If you have some problem using the container, and want to look inside, you can build it by yourself.
-1. Grab the latest Docker file on our repo https://github.com/cardanobay/cardano-node/blob/master/latest/Dockerfile
-2. Uncomment the [OPTIONAL] section
-3. Build the container locally
-4. Launch the container with this command line to obtain root + shell access : `docker run --name cardano-node --rm -it -u root --entrypoint /bin/sh localhost/cardano-node:1.13.0`
+## Debugging (require some sysops skills)
 
-Current available commands are : **sh**, **ls**, **cat**, **echo**, **whoami**, **id**, **tail**, **du**, **grep**, **find**
+⚠️ Please do not use a container in debugging mode for production environment ⚠️
+
+If you have any problem using this container, and want to debug it, please follow theses steps :
+1. Grab the latest Docker file on the repo https://github.com/cardanobay/cardano-node/blob/master/latest/Dockerfile
+2. Uncomment the [OPTIONAL] section (it will add the listed utilities)
+   * You can add or remove any utilities
+   * The path of each utility you want to add must exists in the container from "builder" stage
+   * The needed libraries will be automatically resolved and installed on the final image
+3. Build the container locally (you can use the building script from our repository)
+4. Launch the container with this command line to obtain root + shell access + access to utilities :
+`docker run --name cardano-node --rm -it -u root --entrypoint /bin/bash localhost/cardano-node:<TAG|VERSION>`
+
+Current available commands are : **bash**, **ls**, **cat**, **echo**, **ip**, **ping**, **grep**, **whoami**, **id**, **tail**, **du**, **find**
 
 ## Contact
 
