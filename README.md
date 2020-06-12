@@ -101,7 +101,7 @@ podman run \
   --volume ${PWD}/configuration:/configuration \
   --volume ${PWD}/database:/database \
   --publish 3001:3001 \
-  localhost/cardano-node:latest \
+  cardanobay/cardano-node:latest \
     run  \
       --database-path /database/ \
       --socket-path /socket \
