@@ -51,7 +51,7 @@ RUN git clone https://github.com/input-output-hk/cardano-node.git . \
 
 # BUILD CARDANO NODE BINARY FROM SOURCES
 RUN /build/cabal/cabal update \
- && /build/cabal/cabal install --disable-executable-dynamic --enable-executable-static -j$(nproc) cardano-node
+ && /build/cabal/cabal install -j$(nproc) cardano-node
 
 # COPY CARDANO NODE BINARY AND REQUIRED LIBRARIES
 WORKDIR /build/rootfs
