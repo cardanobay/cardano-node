@@ -1,5 +1,9 @@
 # The Lightweight & Secure Cardano Node Container
 
+* We are currently in the FF (Friends & Family testnet) phase, so this procedure is a work in progress. More detailed informations and concrete use cases to run a node will follow.
+
+* I am running my node with buildah/podman, which is exactly the same as docker. So it may be possible you find some references to theses tools int this documentation. If this is the case, replace the terms "**buildah/podman**" by "**docker**"
+
 ## Why lightweight ?
 
 Because the container is based on [the scratch image](https://hub.docker.com/_/scratch "The Scratch Image"), which is basically **an empty image**.
@@ -20,10 +24,11 @@ Container bundle : **22 Mb compressed** <-> **116 Mb uncompressed**
 
 Because the node runs, by default, with an **unprivileged user**. \
 Another reason is the attack surface is reduced to the strict minimum, because the container contains nothing except the **cardano-node binary**. \
-One more reason, the **Dockerfile(s) and the building script are published** on the github repository. So you can verify by yourself what is packaged inside the container. You should **always verify** what is packaged inside a container before using it.
+One more reason, the **Dockerfile(s) and the building script are published** on the github repository. So you can verify by yourself what is packaged inside the container. You should **always verify** what is packaged inside a container before using it.\
+And the examples to run the node includes good practices when running a Docker Container in production : dropping all [the linux kernel capabilities](https://docs.docker.com/engine/security/security/#linux-kernel-capabilities "the linux kernel capabilities"), then adding ONLY the needed ones to run the service.
 
-## How can I download the container ?
-You can find the latest version of the cardano-node container on [the Cardanobay Docker Hub Repository](https://hub.docker.com/repository/docker/cardanobay/cardano-node "the Cardanobay Docker Hub Repository")
+## Where can I find the container ?
+You can find the latest compiled version of the cardano-node container on [the Cardanobay Docker Hub Repository](https://hub.docker.com/repository/docker/cardanobay/cardano-node "the Cardanobay Docker Hub Repository")
 
 ### Pulling the container
 ```
@@ -38,7 +43,7 @@ docker run --name cardano-node --rm cardanobay/cardano-node:latest <command>
 
 The current building script accepts both docker and buildah
 
-⚠️ Depending on your ~~battle~~ workstation, it can take from 5-60 minutes to build ⚠️
+⚠️ Depending on your ~~battlestation~~ workstation, it can take from 5-60 minutes to build ⚠️
 
 ```
 git clone https://github.com/cardanobay/cardano-node.git
@@ -83,6 +88,60 @@ If you have any problem using this container, and want to debug it, please follo
 `docker run --name cardano-node --rm -it -u root --entrypoint /bin/bash localhost/cardano-node:<TAG|VERSION>`
 
 Current available commands are : **bash**, **ls**, **cat**, **echo**, **ip**, **ping**, **grep**, **whoami**, **id**, **tail**, **du**, **find**
+
+## Examples
+
+### Running the node
+```
+podman run \
+  --name cardano-node \
+  --rm \
+  --cap-drop=ALL \
+  --cap-add=NET_RAW \
+  --volume ${PWD}/configuration:/configuration \
+  --volume ${PWD}/database:/database \
+  --publish 3001:3001 \
+  localhost/cardano-node:latest \
+    run  \
+      --database-path /database/ \
+      --socket-path /socket \
+      --port 3001 \
+      --config /configuration/ff-config.json \
+      --topology /configuration/ff-topology.json
+```
+
+### Debugging the node (as root, needs to build the container locally)
+
+```
+podman run \
+  --name cardano-node \
+  --rm \
+  -it \
+  -u root \
+  --cap-drop=ALL \
+  --cap-add=NET_RAW \
+  --entrypoint /bin/bash \
+  --volume ${PWD}/configuration:/configuration \
+  --volume ${PWD}/database:/database \
+  --publish 3001:3001 \
+  localhost/cardano-node:latest
+```
+
+### Debugging the node (as unprivileged user, requires to build the container locally)
+
+```
+podman run \
+  --name cardano-node \
+  --rm \
+  -it \
+  --cap-drop=ALL \
+  --cap-add=NET_RAW \
+  --entrypoint /bin/bash \
+  --volume ${PWD}/configuration:/configuration \
+  --volume ${PWD}/database:/database \
+  --publish 3001:3001 \
+  localhost/cardano-node:latest
+```
 
 ## Contact
 
