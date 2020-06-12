@@ -67,6 +67,9 @@ RUN cp --parents -f /usr/sbin/nologin ../ \
  && echo "root:x:0:" > group \
  && echo "${GROUP_NAME}:x:${GROUP_ID}:" >> group
 
+# ADD THE SERVICES LIST FILES, REQUIRED BY CARDANO NODE BINARY
+RUN cp -f /etc/services .
+
 # ADD DNS RESOLUTION CAPABILITIES
 WORKDIR /build/rootfs
 RUN cp --parents -f /lib/x86_64-linux-gnu/libnss_dns.so.2 . \

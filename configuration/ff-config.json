@@ -8,7 +8,7 @@
   "Protocol": "TPraos",
   "RequiresNetworkMagic": "RequiresMagic",
   "TraceBlockFetchClient": false,
-  "TraceBlockFetchDecisions": true,
+  "TraceBlockFetchDecisions": false,
   "TraceBlockFetchProtocol": false,
   "TraceBlockFetchProtocolSerialised": false,
   "TraceBlockFetchServer": false,
