@@ -101,14 +101,14 @@ case "${agent}" in
    "docker")
       docker build --tag ${tag} \
 	           --build-arg NODE_VERSION=${node_version} --build-arg USER_NAME=${user_name} --build-arg USER_ID=${user_id} \
-	           --build-arg GROUP_NAME=${group_name} --build-arg GROUP_ID=${group_id} \
-		   --build-arg PORT=${port} ${build_path}
+	           --build-arg GROUP_NAME=${group_name} --build-arg GROUP_ID=${group_id} --build-arg PORT=${port} \
+		   ${build_path}
       ;;
    "buildah")
       buildah bud  --layers --tag ${tag} \
 	           --build-arg NODE_VERSION=${node_version} --build-arg USER_NAME=${user_name} --build-arg USER_ID=${user_id} \
-	           --build-arg GROUP_NAME=${group_name} --build-arg GROUP_ID=${group_id} \
-		   --build-arg PORT=${port} ${build_path}
+	           --build-arg GROUP_NAME=${group_name} --build-arg GROUP_ID=${group_id} --build-arg PORT=${port} \
+		   ${build_path}
       ;;
 esac
 
