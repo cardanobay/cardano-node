@@ -8,8 +8,8 @@ usage() {
   echo "  Push a specific version of Cardano Node container to Docker Hub."
   echo ""
   echo "Available options:"
-  echo " *--tag           The cardano-node container tag [Default: none] [Example: latest, 1.13.0, 1.13.0-debug]"
-  echo "  --agent         Which agent to use to build the container [Default: docker] [docker|buildah]"
+  echo "  --tag*          The cardano-node container tag [Default: none] [Example: latest, 1.13.0, 1.13.0-debug]"
+  echo "  --agent         Which agent to use to push the container [Default: docker] [docker|buildah]"
   echo "  --help          Display this message"
   echo " * = mandatory options"
   exit 0
@@ -57,4 +57,13 @@ if [ ! -x "$(command -v ${agent})" ]; then
 fi
 
 echo "Pushing localhost/cardano-node:${tag} to docker.io/cardanobay/cardano-node:${tag}"
-${agent} push "localhost/cardano-node:${tag}" "docker.io/cardanobay/cardano-node:${tag}"
+
+case "${agent}" in
+   "docker")
+      ${agent} tag "cardano-node:${tag}"  "cardanobay/cardano-node:${tag}"
+      ${agent} push "cardanobay/cardano-node:${tag}"
+      ;;
+   "buildah")
+      ${agent} push "localhost/cardano-node:${tag}" "docker.io/cardanobay/cardano-node:${tag}"
+      ;;
+esac

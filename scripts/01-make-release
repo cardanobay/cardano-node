@@ -8,7 +8,7 @@ usage() {
   echo "  Make a release containing the cardano-node binary"
   echo ""
   echo "Available options:"
-  echo " *--tag           The cardano-node release tag [Default: none] [Example: 1.12.0, 1.13.0]"
+  echo "  --tag*          The cardano-node release tag [Default: none] [Example: 1.12.0, 1.13.0]"
   echo "  --help          Display this message"
   echo " * = mandatory options"
   exit 0
