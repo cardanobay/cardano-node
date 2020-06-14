@@ -15,7 +15,6 @@ usage() {
   echo "  --user_id       The cardano-node user id [Default: 256]"
   echo "  --group_name    The cardano-node group name [Default: cardano-node]"
   echo "  --group_id      The cardano-node group id [Default: 256]"
-  echo "                  and Libraries [Default: 3.2.0.0]"
   echo "  --port          The default EXPOSED TCP port [Default: 3001]"
   echo "  --agent         Which agent to use to build the container [Default: docker] [docker|buildah]"
   echo "  --help          Display this message"
