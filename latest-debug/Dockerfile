@@ -1,5 +1,5 @@
 #####################################################
-## The Lightweight & Secure Cardano Node Container ##
+##      The Lightweight & Secure Cardano Node      ##
 #####################################################
 
 #####################################################
@@ -83,7 +83,7 @@ FROM scratch as final
 
 # SOME ADVERTISING ^_^
 LABEL "com.cardanobay.www"="[CAB] Cardanobay.com Stake Pool"
-LABEL description="The Lightweight & Secure Cardano Node Container"
+LABEL description="The Lightweight & Secure Cardano Node"
 LABEL maintainer="pascha+cardanobay@protonmail.ch"
 
 # SET EXPOSED PORT

@@ -1,4 +1,4 @@
-# The Lightweight & Secure Cardano Node Container
+# The Lightweight & Secure Cardano Node
 
 * We are currently in the FF (Friends & Family testnet) phase, so this guide is a work in progress. More detailed informations and concrete use cases to run a node will follow.
 
