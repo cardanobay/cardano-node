@@ -1,0 +1,70 @@
+#!/bin/sh
+
+set -e
+trap 'catch $? $LINENO' EXIT
+
+usage() {
+  echo "Usage: $0 --tag <tag>"
+  echo "  Make a release containing the cardano-node binary"
+  echo ""
+  echo "Available options:"
+  echo " *--tag           The cardano-node release tag [Default: none] [Example: 1.12.0, 1.13.0]"
+  echo "  --help          Display this message"
+  echo " * = mandatory options"
+  exit 0
+}
+
+catch() {
+  if [ "$1" != "0" ]; then
+    echo "An error has occured, please verify the options"
+    usage
+  fi
+}
+
+help=${help:-false}
+tag=${tag:-}
+
+while [ $# -gt 0 ]; do
+   if [[ $1 == *"--"* ]]; then
+        param="${1/--/}"
+        declare $param="$2" 2>/dev/null
+   fi
+  shift
+done
+
+if [ "$help" != false ]; then
+  usage
+fi
+
+if [ -z "$tag" ]; then
+  usage
+fi
+
+binary_path="${PWD}/${tag}/bin"
+release_path="${PWD}/${tag}/release"
+
+echo ""
+echo "Check the options before continuing :"
+echo "tag           : $tag"
+echo "binary_path   : ${binary_path}"
+echo "release_path  : ${release_path}"
+echo ""
+
+read -n 1 -s -r -p "Press any key to continue"
+echo ""
+
+if [ ! -f "${binary_path}/cardano-node" ]; then
+  echo "Binary ${binary_path} doesn't exist"
+  exit 0
+fi
+
+echo "Making the final release for cardano-node ${tag}"
+mkdir -p ${release_path}
+cd ${release_path}
+tar cJf cardano-node.tar.xz -C ${binary_path} cardano-node
+md5sum cardano-node.tar.xz > md5sum
+sha1sum cardano-node.tar.xz > sha1sum
+sha256sum cardano-node.tar.xz > sha256sum
+echo "Final release created in ${release_path}"
+echo "You can now manually publish this release on github"
+
