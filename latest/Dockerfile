@@ -20,7 +20,7 @@ ARG GROUP_ID="256"
 
 # INSTALL PREREQUISITES
 RUN apt update -y \
-  && apt install -y netbase wget xz-utils
+  && apt install -y wget xz-utils
 
 # ADD CARDANO NODE USER AND GROUP + ROOT USER AND GROUP
 WORKDIR /build/rootfs/etc
@@ -30,8 +30,15 @@ RUN cp --parents -f /usr/sbin/nologin ../ \
  && echo "root:x:0:" > group \
  && echo "${GROUP_NAME}:x:${GROUP_ID}:" >> group
 
-# ADD THE SERVICES LIST FILES, REQUIRED BY THE CARDANO NODE BINARY
-RUN cp -f /etc/services .
+# ADD A MINIMALIST SERVICES FILES (REQUIRED BY THE CARDANO NODE BINARY)
+RUN touch services \
+ && echo "ntp             123/tcp" >> services \
+ && echo "ntp             123/udp" >> services \
+ && echo "domain          53/tcp"  >> services \
+ && echo "domain          53/udp"  >> services
+
+# ADD LOCAL DNS RESOLUTION CAPABILITIES
+RUN echo "hosts: files dns" > nsswitch.conf
 
 # ADD THE CARDANO NODE BINARY
 WORKDIR /build/rootfs/usr/local/bin
