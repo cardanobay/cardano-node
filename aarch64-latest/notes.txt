@@ -26,10 +26,10 @@ apt update -y \
 wget https://raw.githubusercontent.com/cardanobay/cardano-node/master/aarch64-latest/Dockerfile
 
 
-tag_src=1.13.0-rewards
+tag_src=aarch64-1.13.0-rewards
 tag_dest=latest
 
-docker build --tag ${tag_src} .
+docker build --tag cardano-node:${tag_src} .
 
 docker tag "cardano-node:${tag_src}"  "cardanobay/cardano-node:${tag_dest}"
 docker push "cardanobay/cardano-node:${tag_dest}"
