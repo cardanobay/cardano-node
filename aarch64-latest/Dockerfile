@@ -73,7 +73,6 @@ RUN git clone https://github.com/input-output-hk/cardano-node.git . \
  && tag=$([ "${NODE_VERSION}" = "latest" ] && echo $(git describe --tags $(git rev-list --tags --max-count=1)) || echo ${NODE_VERSION}) \
  && git checkout tags/${tag} \
  && cabal update
-
 # BUILD CARDANO-NODE AND CARDANO-CLI
 RUN cabal build all
 WORKDIR /build/rootfs
@@ -96,6 +95,7 @@ RUN mkdir -p ./usr/local/bin \
 # > Uncomment this section to add some debugging utilities
 # !!! DON'T ADD THESES UTILITIES IN PRODUCTION !!!
 WORKDIR /build/rootfs
+RUN apt install -y iproute2 iputils-ping
 RUN set -- \
               /bin/bash /bin/ls /bin/cat /bin/echo /bin/ip /bin/ping \
               /bin/grep /usr/bin/id /usr/bin/tail /usr/bin/du \
