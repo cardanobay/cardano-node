@@ -2,16 +2,14 @@
 ##      The Lightweight & Secure Cardano Node      ##
 #####################################################
 
-#####################################################
-## !!! [DEBUG] DONT USE THIS IN PRODUCTION [DEBUG] ##
-#####################################################
+# ----------------------------------------------------------------
+# CARDANO-NODE - BUILDING STAGE
+# ----------------------------------------------------------------
 
-# ----------------------------------------------------------------
-# [DEBUG] CARDANO-NODE - BUILDING STAGE
-# ----------------------------------------------------------------
+# !!! COMPILE THIS ONLY ON AARCH64 !!!
 
 # LOAD DEBIAN IMAGE
-FROM debian AS builder
+FROM arm64v8/ubuntu:18.04 AS builder
 
 # SET DYNAMIC VARIABLES
 # > To override them, use the "--build-arg" argument
@@ -21,10 +19,14 @@ ARG USER_NAME="cardano-node"
 ARG USER_ID="256"
 ARG GROUP_NAME="cardano-node"
 ARG GROUP_ID="256"
+ARG CABAL_VERSION="3.2.0.0"
+ARG GHC_VERSION="8.6.5"
+ARG OS_ARCH="aarch64"
 
 # INSTALL PREREQUISITES
 RUN apt update -y \
-  && apt install -y wget xz-utils
+  && apt-get -y install build-essential pkg-config libffi-dev libgmp-dev libssl-dev libtinfo-dev libsystemd-dev \
+     zlib1g-dev make g++ tmux git jq wget libncursesw5 xz-utils llvm
 
 # ADD CARDANO NODE USER AND GROUP + ROOT USER AND GROUP
 WORKDIR /build/rootfs/etc
@@ -40,22 +42,55 @@ RUN touch services \
  && echo "ntp             123/udp" >> services \
  && echo "domain          53/tcp"  >> services \
  && echo "domain          53/udp"  >> services
- 
+
 # ADD LOCAL DNS RESOLUTION CAPABILITIES
 RUN echo "hosts: files dns" > nsswitch.conf
 
-# ADD THE CARDANO NODE BINARY
-WORKDIR /build/rootfs/usr/local/bin
-RUN wget https://github.com/cardanobay/cardano-node/releases/download/${NODE_VERSION}/cardano-node.tar.xz \
-    && wget https://github.com/cardanobay/cardano-node/releases/download/${NODE_VERSION}/sha256sum \
-    && echo "$(cat sha256sum)" | sha256sum --check \
-    && tar -xf cardano-node.tar.xz \
-    && rm cardano-node.tar.xz sha256sum
-
 # ADD DNS RESOLUTION CAPABILITIES
 WORKDIR /build/rootfs
-RUN cp --parents -f /lib/x86_64-linux-gnu/libnss_dns.so.2 . \
- && cp --parents -f /lib/x86_64-linux-gnu/libnss_files.so.2 .
+RUN cp --parents -f /lib/${OS_ARCH}-linux-gnu/libnss_dns.so.2 . \
+ && cp --parents -f /lib/${OS_ARCH}-linux-gnu/libnss_files.so.2 .
+
+# INSTALL GHC
+# The Glasgow Haskell Compiler
+WORKDIR /build/ghc
+RUN wget -qO-  https://downloads.haskell.org/ghc/${GHC_VERSION}/ghc-${GHC_VERSION}-${OS_ARCH}-ubuntu18.04-linux.tar.xz | tar xJf - -C . --strip-components 1 \
+ && ./configure \
+ && make install
+
+# INSTALL CABAL
+# The Haskell Common Architecture for Building Applications and Libraries 
+WORKDIR /build/cabal
+RUN wget -qO- https://github.com/haskell/cabal/archive/Cabal-v${CABAL_VERSION}.tar.gz | tar xzfv - -C . --strip-components 1 \
+  && cd cabal-install \
+  && ./bootstrap.sh \
+  && cp ./dist/build/cabal/cabal /usr/local/bin
+
+# DOWNLOAD AND PREPARE CARDANO SOURCE CODE
+WORKDIR /build/cardano
+git clone https://github.com/input-output-hk/cardano-node.git . \
+ && git fetch --all --tags \
+ && tag=$([ "${NODE_VERSION}" = "latest" ] && echo $(git describe --tags $(git rev-list --tags --max-count=1)) || echo ${NODE_VERSION}) \
+ && git checkout tags/${tag} \
+ && cabal update
+
+# BUILD CARDANO-NODE AND CARDANO-CLI
+RUN cabal build all
+WORKDIR /build/rootfs
+mkdir -p ./usr/local/bin \
+ && set -- \
+              $(find /build/cardano -type f -name "cardano-node") $(find /build/cardano -type f -name "cardano-cli") \
+           \
+ && while [ $# -gt 0 ]; \
+      do \
+        ldd ${1} | grep -Po '(?<=)\/.+[^ ]+(?= )' | \
+          while read -r line; \
+            do \
+              cp --parents -f $line . ; \
+            done; \
+        cp -f ${1} ./usr/local/bin \
+        && shift; \
+      done
 
 # [OPTIONAL] ADD OPTIONAL UTILITIES
 # > Uncomment this section to add some debugging utilities
@@ -79,9 +114,8 @@ RUN set -- \
   && cp --parents -f /etc/bash.bashrc . \
   && ln -s /bin/bash ./bin/sh . \
   && cp -R --parents -f /lib/terminfo/x/ .
-
 # ----------------------------------------------------------------
-# [DEBUG] CARDANO-NODE - FINAL CONTAINER
+# CARDANO-NODE - FINAL CONTAINER
 # ----------------------------------------------------------------
 
 # LOAD SCRATCH IMAGE

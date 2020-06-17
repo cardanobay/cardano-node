@@ -36,7 +36,7 @@ RUN touch services \
  && echo "ntp             123/udp" >> services \
  && echo "domain          53/tcp"  >> services \
  && echo "domain          53/udp"  >> services
-
+ 
 # ADD LOCAL DNS RESOLUTION CAPABILITIES
 RUN echo "hosts: files dns" > nsswitch.conf
 
