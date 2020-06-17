@@ -64,7 +64,7 @@ docker run \
 
 **Running the container in production (very secure environnement / 🎉 aarch64 ROCK PI 🎉 )**
 
-Manual compilation (AARCH64) : https://github.com/cardanobay/cardano-node/blob/master/aarch64-latest/manual_process.txt
+Manual compilation (AARCH64) : https://github.com/cardanobay/cardano-node/blob/master/aarch64-latest/manual_process.txt\
 Dockerfile compilation (AARCH64) : https://github.com/cardanobay/cardano-node/blob/master/aarch64-latest/Dockerfile
 
 ```
