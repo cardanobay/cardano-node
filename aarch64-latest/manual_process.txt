@@ -48,4 +48,8 @@ git clone https://github.com/input-output-hk/cardano-node.git . \
 cabal build all
 
 cp -f $(find /build/cardano -type f -name "cardano-node") /usr/local/bin
-cp - $(find /build/cardano -type f -name "cardano-cli") /usr/local/bin
+cp -f $(find /build/cardano -type f -name "cardano-cli") /usr/local/bin
+
+# USE IT 
+cardano-node version
+cardano-cli version
