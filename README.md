@@ -131,5 +131,6 @@ Available options:
 
 Admin email : pascha+cardanobay@protonmail.com \
 Website : https://www.cardanobay.com \
+Website: https://k8s-pool.subnet.dev \
 Docker Hub : https://hub.docker.com/r/cardanobay/cardano-node \
 Github : https://github.com/cardanobay/cardano-node
