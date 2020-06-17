@@ -42,7 +42,9 @@ sudo chmod 770 ${PWD}/database
 sudo chmod g+s ${PWD}/database
 </code>
 
-**Running the container in production (very secure environnement)**
+**Running the container in production (very secure environnement / x86_64)**
+
+For aarch64 (Rock PI), replace **cardanobay/cardano-node:latest** with **cardanobay/cardano-node:aarch64-latest**
 
 ```
 docker run \
