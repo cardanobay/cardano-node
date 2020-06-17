@@ -2,8 +2,6 @@
 
 * We are currently in the FF (Friends & Family testnet) phase, so this guide is a work in progress. More detailed informations and concrete use cases to run a node will follow.
 
-* I am running my node with buildah/podman, which is exactly the same as docker. So it may be possible you find some references to theses tools in this. If this is the case, just replace the terms "**buildah/podman**" by "**docker**"
-
 ## Why lightweight ?
 
 Because the container is based on [the scratch image](https://hub.docker.com/_/scratch "The Scratch Image"), which is basically **an empty image**.
@@ -21,49 +19,20 @@ Container bundle : **25 MB compressed** <-> **105 MB uncompressed**
 
 ## Why secure ?
 
-Because the node runs, by default, with an **unprivileged user**. \
-Another reason is the attack surface is reduced to the strict minimum, because the container contains nothing except the **cardano-node binary**. It may be dangerous to add unnecessary commands or libraries, because if an attacker gains remote shell access on your node, he will have more tools to play with to alterate or destroy your node. \
-One more reason, the **Dockerfile(s) and the building scripts are published** on the github repository. So you can (and should always) verify by yourself what is packaged inside the container. \
-And finally, I include in the examples the best practice to run a container : dropping all [the linux kernel capabilities](https://docs.docker.com/engine/security/security/#linux-kernel-capabilities "the linux kernel capabilities") by default, then adding thoses who are mandatory.
+* Because the node runs, by default, with an **unprivileged user**.
+* The attack surface is reduced to the strict minimum, because the container contains nothing except the **cardano-node binary**. It may be dangerous to add unnecessary commands or libraries, because if an attacker gains remote shell access on your container, he will have more tools to alterate the staking pool.
+* The **Dockerfile(s) and the building scripts are published** on the github repository. So you can (and should always) verify by yourself what is packaged inside the container.
+* And finally, I include in the examples the best practice to run a container : dropping all [linux kernel capabilities](https://docs.docker.com/engine/security/security/#linux-kernel-capabilities "the linux kernel capabilities") by default, then adding thoses who are mandatory.
 
 ## Where can I find the container ?
 
 You can find the latest compiled version of the cardano-node container on the [Cardanobay Docker Hub Repository](https://hub.docker.com/repository/docker/cardanobay/cardano-node "the Cardanobay Docker Hub Repository")
 
-There are two types of tags : **version** and **version-debug**. You should always use the **version** tag (1.13.0, latest etc.) when running in production. The **version-tag** includes somes tools to debug the container if needed.
-
-```
-docker run --name cardano-node --rm -it --entrypoint /bin/bash cardanobay/cardano-node:latest-debug
-```
+They are two types of tags : **version** and **version-debug**. You should always use the **version** tag (1.13.0, latest etc.) when running in production. The **version-debug** includes somes tools to debug the container if needed.
 
 ## Examples
 
-### Fast examples
-
-#### Pulling the container (production unsecure mode)
-```
-docker pull cardanobay/cardano-node:latest
-```
-#### Starting the container (production unsecure mode)
-```
-docker run --name cardano-node --rm --cap-drop=ALL --cap-add=NET_RAW cardanobay/cardano-node:latest <command>
-```
-
-#### Pulling the container (⚠️ debug mode ⚠️)
-```
-docker pull cardanobay/cardano-node:latest-debug
-```
-
-#### Starting the container  (⚠️ debug mode ⚠️)
-```
-docker run --name cardano-node --rm --cap-drop=ALL --cap-add=NET_RAW cardanobay/cardano-node:latest-debug <command>
-```
-
-Current available commands for debugging are : **bash**, **ls**, **cat**, **echo**, **ip**, **ping**, **grep**, **whoami**, **id**, **tail**, **du**, **find**
-
-### Running the node in production, with extra security
-
-The container must write in the local (mounted) database folder. It is  **${PWD}/database** in the examples. So make sure the cardano-node user inside the container can read-write in this folder. By default, it you don't rebuild the container, the user and group ID of cardano-node user are `256`. And if you update the cardano-node version, it may be necessary to drop everything in the database folder `rm -rf ${PWD}/database/*`
+The container have to write in the local (mounted/ volume) database folder. It is  **${PWD}/database** in the examples. So make sure the cardano-node user inside the container can read-write in this folder. By default, it you don't rebuild the container, the user and group ID of cardano-node user are `256`. And if you update the cardano-node version, it may be necessary to drop everything in the database folder `rm -rf ${PWD}/database/*`
 
 **Securing the database folder**
 
@@ -93,7 +62,7 @@ docker run \
       --topology /configuration/ff-topology.json
 ```
 
-### Debugging the node (as root)
+### Debugging ⚠️ the node (as root)
 
 ```
 docker run \
@@ -110,7 +79,7 @@ docker run \
   cardanobay/cardano-node:latest-debug
 ```
 
-### Debugging the node (as unprivileged user)
+### Debugging ⚠️ the node (as unprivileged user)
 
 ```
 docker run \
@@ -125,6 +94,8 @@ docker run \
   --publish 3001:3001 \
   cardanobay/cardano-node:latest-debug
 ```
+
+Current available commands for debugging are : **bash**, **ls**, **cat**, **echo**, **ip**, **ping**, **grep**, **whoami**, **id**, **tail**, **du**, **find**
 
 ## Building the container locally (require some sysops skills)
 
