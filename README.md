@@ -44,8 +44,6 @@ sudo chmod g+s ${PWD}/database
 
 **Running the container in production (very secure environnement / x86_64)**
 
-For aarch64 (Rock PI), replace **cardanobay/cardano-node:latest** with **cardanobay/cardano-node:aarch64-latest**
-
 ```
 docker run \
   --name cardano-node \
@@ -56,6 +54,26 @@ docker run \
   --volume ${PWD}/database:/database \
   --publish 3001:3001 \
   cardanobay/cardano-node:latest \
+    run  \
+      --database-path /database/ \
+      --socket-path /socket \
+      --port 3001 \
+      --config /configuration/ff-config.json \
+      --topology /configuration/ff-topology.json
+```
+
+**Running the container in production (very secure environnement / 🎉 aarch64 ROCK PI 🎉 )**
+
+```
+docker run \
+  --name cardano-node \
+  --rm \
+  --cap-drop=ALL \
+  --cap-add=NET_RAW \
+  --volume ${PWD}/configuration:/configuration \
+  --volume ${PWD}/database:/database \
+  --publish 3001:3001 \
+  cardanobay/cardano-node:aarch64-latest \
     run  \
       --database-path /database/ \
       --socket-path /socket \
@@ -75,8 +93,8 @@ docker run \
   --cap-drop=ALL \
   --cap-add=NET_RAW \
   --entrypoint /bin/bash \
-  --volume ${PWD}/sandbox/configuration:/configuration \
-  --volume ${PWD}/sandbox/database:/database \
+  --volume ${PWD}/configuration:/configuration \
+  --volume ${PWD}/database:/database \
   --publish 3001:3001 \
   cardanobay/cardano-node:latest-debug
 ```
@@ -91,8 +109,8 @@ docker run \
   --cap-drop=ALL \
   --cap-add=NET_RAW \
   --entrypoint /bin/bash \
-  --volume ${PWD}/sandbox/configuration:/configuration \
-  --volume ${PWD}/sandbox/database:/database \
+  --volume ${PWD}/configuration:/configuration \
+  --volume ${PWD}/database:/database \
   --publish 3001:3001 \
   cardanobay/cardano-node:latest-debug
 ```
