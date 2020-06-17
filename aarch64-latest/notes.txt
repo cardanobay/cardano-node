@@ -27,7 +27,7 @@ wget https://raw.githubusercontent.com/cardanobay/cardano-node/master/aarch64-la
 
 
 tag_src=aarch64-1.13.0-rewards
-tag_dest=latest
+tag_dest=aarch64-latest
 
 docker build --tag cardano-node:${tag_src} .
 
