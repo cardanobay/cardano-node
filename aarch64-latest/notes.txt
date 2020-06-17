@@ -20,5 +20,16 @@ apt update -y \
    $(lsb_release -cs) \
    stable" \
  && apt update -y \
- && apt install docker-ce docker-ce-cli containerd.io \
+ && apt install docker-ce docker-ce-cli containerd.io -y \
  && systemctl enable --now docker
+
+wget https://raw.githubusercontent.com/cardanobay/cardano-node/master/aarch64-latest/Dockerfile
+
+
+tag_src=1.13.0-rewards
+tag_dest=latest
+
+docker build --tag ${tag_src} .
+
+docker tag "cardano-node:${tag_src}"  "cardanobay/cardano-node:${tag_dest}"
+docker push "cardanobay/cardano-node:${tag_dest}"

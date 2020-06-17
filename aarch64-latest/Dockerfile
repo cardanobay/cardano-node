@@ -59,7 +59,7 @@ RUN wget -qO-  https://downloads.haskell.org/ghc/${GHC_VERSION}/ghc-${GHC_VERSIO
  && make install
 
 # INSTALL CABAL
-# The Haskell Common Architecture for Building Applications and Libraries 
+# The Haskell Common Architecture for Building Applications and Libraries
 WORKDIR /build/cabal
 RUN wget -qO- https://github.com/haskell/cabal/archive/Cabal-v${CABAL_VERSION}.tar.gz | tar xzfv - -C . --strip-components 1 \
   && cd cabal-install \
@@ -68,7 +68,7 @@ RUN wget -qO- https://github.com/haskell/cabal/archive/Cabal-v${CABAL_VERSION}.t
 
 # DOWNLOAD AND PREPARE CARDANO SOURCE CODE
 WORKDIR /build/cardano
-git clone https://github.com/input-output-hk/cardano-node.git . \
+RUN git clone https://github.com/input-output-hk/cardano-node.git . \
  && git fetch --all --tags \
  && tag=$([ "${NODE_VERSION}" = "latest" ] && echo $(git describe --tags $(git rev-list --tags --max-count=1)) || echo ${NODE_VERSION}) \
  && git checkout tags/${tag} \
@@ -77,7 +77,7 @@ git clone https://github.com/input-output-hk/cardano-node.git . \
 # BUILD CARDANO-NODE AND CARDANO-CLI
 RUN cabal build all
 WORKDIR /build/rootfs
-mkdir -p ./usr/local/bin \
+RUN mkdir -p ./usr/local/bin \
  && set -- \
               $(find /build/cardano -type f -name "cardano-node") $(find /build/cardano -type f -name "cardano-cli") \
            \
@@ -137,6 +137,6 @@ COPY --from=builder /build/rootfs/ /
 USER ${USER_NAME}
 EXPOSE ${PORT}/tcp
 
-# FORCE CARDANO NODE COMMAND 
+# FORCE CARDANO NODE COMMAND
 ENTRYPOINT ["cardano-node"]
 CMD ["run"]

@@ -1,0 +1,51 @@
+# !!! This script is published as a "boilerplate" to explain the process
+# !!! of building the cardano-node (Haskell) on aarch64 (Rock PI compatible ;)
+# !!! Because I dis my tests on qemu/nfs (nosuid), It was easier to run
+# !!! every command as root user. Of course, this is not recommended on
+# !!! production environnement, so please adapt this script to use with
+# !!! "sudo" and set correct permissions on production environnement.
+
+
+# SOME HELPERS ENV VARS
+cardano_version=1.13.0
+cabal_version=3.2.0.0
+ghc_version=8.6.5
+os_arch=aarch64
+
+# INSTALL GLOBAL PREREQUISITES
+# apt-get update -y
+# apt-get -y install build-essential pkg-config libffi-dev libgmp-dev libssl-dev libtinfo-dev libsystemd-dev zlib1g-dev make g++ tmux git jq wget libncursesw5 xz-utils llvm -y
+
+# CREATE DIRECTORY STRUCTURE
+mkdir -p /build/cabal
+mkdir -p /build/ghc
+mkdir -p /build/cardano
+
+# INSTALL GHC
+# The Glasgow Haskell Compiler
+cd /build/ghc
+wget -qO-  https://downloads.haskell.org/ghc/${ghc_version}/ghc-${ghc_version}-${os_arch}-ubuntu18.04-linux.tar.xz | tar xJf - -C . --strip-components 1 \
+ && ./configure \
+ && make install
+
+# INSTALL CABAL
+# The Haskell Common Architecture for Building Applications and Libraries 
+cd /build/cabal
+wget -qO- https://github.com/haskell/cabal/archive/Cabal-v${cabal_version}.tar.gz | tar xzfv - -C . --strip-components 1 \
+  && cd cabal-install \
+  && ./bootstrap.sh \
+  && cp ./dist/build/cabal/cabal /usr/local/bin
+
+# DOWNLOAD AND PREPARE CARDANO SOURCE CODE
+cd /build/cardano
+git clone https://github.com/input-output-hk/cardano-node.git . \
+ && git fetch --all --tags \
+ && tag=$([ "${cardano_version}" = "latest" ] && echo $(git describe --tags $(git rev-list --tags --max-count=1)) || echo ${cardano_version}) \
+ && git checkout tags/${cardano_version} \
+ && cabal update
+
+# BUILD : CARDANO NODE, CARDANO CLI
+cabal build all
+
+cp -f $(find /build/cardano -type f -name "cardano-node") /usr/local/bin
+cp - $(find /build/cardano -type f -name "cardano-cli") /usr/local/bin
