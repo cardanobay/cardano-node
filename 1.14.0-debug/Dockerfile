@@ -24,7 +24,7 @@ ARG GROUP_ID="256"
 
 # INSTALL PREREQUISITES
 RUN apt update -y \
-  && apt install -y wget xz-utils
+  && apt install -y wget xz-utils net-tools telnet procps
 
 # ADD CARDANO NODE USER AND GROUP + ROOT USER AND GROUP
 WORKDIR /build/rootfs/etc
@@ -62,9 +62,10 @@ RUN cp --parents -f /lib/x86_64-linux-gnu/libnss_dns.so.2 . \
 # !!! DON'T ADD THESES UTILITIES IN PRODUCTION !!!
 WORKDIR /build/rootfs
 RUN set -- \
-              /bin/bash /bin/ls /bin/cat /bin/echo /bin/ip /bin/ping \
+              /bin/bash /bin/sh /bin/ls /bin/cat /bin/echo /bin/ip /bin/ping \
               /bin/grep /usr/bin/id /usr/bin/tail /usr/bin/du \
-              /usr/bin/find /usr/bin/whoami \
+              /usr/bin/find /usr/bin/whoami /usr/bin/telnet /bin/hostname  \
+              /bin/ps /bin/netstat \
            \
  && while [ $# -gt 0 ]; \
       do \

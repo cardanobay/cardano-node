@@ -9,7 +9,7 @@ Because the container is based on [the scratch image](https://hub.docker.com/_/s
 List of stuff packaged in the container :
 
 * The domain name service (DNS) libraries (~80 KB)
-* The cardano-node [fully statically linked binary](https://github.com/cardanobay/cardano-builder) (~101 MB)
+* The cardano-node [fully statically linked binary](https://github.com/cardanobay/cardano-builder) (~20 MB)
 * The nologin binary (used as default shell for users) (~14 KB)
 * Two users (cardano-node and root) [~150 b]
 
