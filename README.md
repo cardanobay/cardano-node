@@ -13,7 +13,7 @@ List of stuff packaged in the container :
 * The nologin binary (used as default shell for users) (~14 KB)
 * Two users (cardano-node and root) [~150 b]
 
-Container bundle : **25 MB compressed** <-> **105 MB uncompressed**
+Container bundle : **6 MB compressed** <-> **22 MB uncompressed**
 
 ...and this is it :) Nothing more, nothing less ! Hard to do smaller, isn't it ? ^_^
 
